@@ -17,6 +17,7 @@ For this project, there are several assumptions for the environment detailed bel
   - each VM has NTP setup and configured
 - Both Proxmox hypervisors and their associated VM's can communicate
   - Network and firewall configurations completed
+  - k3s requires some specific firewall rules be setup, such as port 6443. [more info here](https://docs.k3s.io/installation/requirements?os=rhel#operating-systems)
 
 ## Step 1: Install k3s on Controller Node
 
@@ -35,13 +36,13 @@ In k3s, most of this is streamlined for learning, however the underlying respons
 To install, run the official installation script:
 
 ```bash
-curl -sfL https://get.k3s.io | sh -
+sudo curl -sfL https://get.k3s.io | sh -
 ```
 
 After install, verify the cluster status. Yes, just one node is still considered a cluster!
 
 ```bash
-kubectl get nodes
+sudo kubectl get nodes
 ```
 
 ## Step 2: Install k3s on Worker Node
@@ -56,13 +57,13 @@ On your other VM, we'll go through a similar installation process. But for this 
 To install, and join to the controller node cluster:
 
 ```bash
-curl -sfL https://get.k3s.io | K3S_URL=https://<controller-ip>:6443 K3S_TOKEN=<token> sh -
+sudo curl -sfL https://get.k3s.io | K3S_URL=https://<controller-ip>:6443 K3S_TOKEN=<token> sh -
 ```
 
 Confirm success by checking nodes:
 
 ```bash
-kubectl get nodes
+sudo kubectl get nodes
 ```
 
 Both nodes should now be listed.
