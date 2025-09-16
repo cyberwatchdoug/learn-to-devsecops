@@ -1,5 +1,8 @@
 # Part 2: Monitoring the Cluster
-In part 2 of this series, we begin to add monitoring services to our cluster.
+In part 2 of this series, we begin to add monitoring services to our cluster. This guide is based on the following versions:
+
+- k3s version 1.33+
+- kube-prometheus-stack version 0.85.0 (Helm Chart version 77.6.2)
 
 Prometheus is a monitoring and alerting tookit for collecting and storing time-series metrics from the k8s cluster. It'll help with providing visibility into resource usage, application performance, and overall cluster health.
 
@@ -63,6 +66,17 @@ tcp   LISTEN 0      4096               *:10249            *:*
 
 Without this `config.yaml` change, instead of a * (star) you would see `127.0.0.1` since that is the default bind-address for these control plane components.
 
+Another check is for the control plane metrics endpoints:
+
+```bash
+curl -k https://<NODE_IP>:10257/metrics     # KubeControllerManager
+curl -k https://<NODE_IP>:10259/metrics     # KubeScheduler
+curl -k https://<NODE_IP>:10249/metrics     # KubeProxy
+
+# Check ServiceMonitor discovery
+kubectl get servicemonitor [-n monitoring]
+```
+
 ### Essential Adaptations to k3s
 
 There is going to be a lot of unpacking here. Let me first show you the values file you'll need to created along with the content inside it. Then after I'll explain what each part does.
@@ -78,8 +92,9 @@ grafana:
     # Use your storage class (e.g., longhorn, nfs-client)
     storageClassName: "local-path"  # Adjust to your setup
 
-defaultRules:
-  create: false  # Disable default rules that don't work with k3s
+# Optional to disable default rules
+#defaultRules:
+#  create: false
 
 # K3s-specific service monitor configuration
 # Only scrape kubelet to avoid duplicate metrics
@@ -164,11 +179,14 @@ alertmanager:
 This will be broken down by the main section headings, so `grafana`, `defaultRles`, `kubelet`, etc...
 
 - First section is `grafana` configures persistent storage for Grafana dashboards, datasources, and user settings.
-- Next, we disable the default rules to avoid frustrations with what actually works for k3s and what doesn't. This will be revisited in a future guide with a more customized approach.
+- Optionally, we can disable the default rules to avoid frustrations with what actually works for k3s and what doesn't.
+  - The default rules assume separate control plane pods, which don't exist by default in k3s's unified architecture.
+  - Optional because we created endpoints for 3 of these control plane resources.
 - We want to scrape `kubelet` and disable the `kubeApiServer` scraping to avoid duplicate metrics.
 - The next 3 sections configure the controller planes for *Controller Manager*, *Scheduler*, and *Proxy*, since we previously configured the bind-address to point outside of localhost.
   - The configuration sets the endpoint IP and ports and enables the service.
   - k3s v1.22+ uses HTTPS by default, so we skip certificate verification (just for Prometheus).
+    - This is for simplicity in a lab environment. For production consider proper certificate management.
 - We also disable the `etcd` scraping since k3s uses SQLite by default.
 - The final sections for `prometheus` and `alertmanager` set retention, resource, and storage options.
 
