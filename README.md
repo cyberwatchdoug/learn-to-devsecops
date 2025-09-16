@@ -4,6 +4,7 @@ This repository documents my hands-on journey to mastering DevSecOps concepts an
 
 ## Contents
 
-- **kubernetes/part-1-preparation.md**: Detailed instructions for preparing your environment, installing k3s on controller and worker nodes, and setting up Helm for Kubernetes package management.
+- **[kubernetes/part-1-preparation.md](kubernetes/part-1-preparation.md)**: Detailed instructions for preparing your environment, installing k3s on controller and worker nodes, and setting up Helm for Kubernetes package management.
+- **[kubernetes/part-2-monitoring.md](kubernetes/part-2-monitoring.md)**: Step-by-step guide for adding monitoring to your cluster using Prometheus and Grafana, including k3s-specific configuration and Helm deployment.
 
 More guides and documentation will be added as my journey progresses
